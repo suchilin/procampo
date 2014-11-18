@@ -1,0 +1,293 @@
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from pro_site.models import *
+from django.core import serializers
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+models_list = [Pv13,Pv12]
+
+@csrf_exempt
+def get_cartography_data(request):
+    if request.POST:
+        modelo = request.POST.get('model_')
+        m_id=request.POST.get('id')
+        if modelo=='cader':
+            data_m=Cader.objects.filter(ddr_id=m_id)
+        elif modelo=='municipio':
+            data_m=Municipio.objects.filter(cader_id=m_id)
+        elif modelo=='ejido':
+            data_m=Ejido.objects.filter(municipio_id=m_id)
+        else:
+            data_m=""
+        data=serializers.serialize("json", data_m)
+        return HttpResponse(data, mimetype="application/javascript")
+    return HttpResponse("Hello World")  
+  
+@csrf_exempt
+def obtener_ejidos(request):
+    if request.POST:
+        municipio_id=request.POST.get('municipio_id')
+        ejido = Ejido.objects.filter(municipio_id=municipio_id)
+        data_m=serializers.serialize("json", ejido,fields=('id','nombre'))
+        return HttpResponse(data_m, mimetype="application/javascript")
+    return HttpResponse("Hello World")
+
+@csrf_exempt
+def obtener_municipios(request):
+    if request.POST:
+        cader_id=request.POST.get('cader_id')
+        municipio = Municipio.objects.filter(cader_id=cader_id)
+        data_m=serializers.serialize("json", municipio,fields=('id','nombre'))
+        return HttpResponse(data_m, mimetype="application/javascript")
+    return HttpResponse("Hello World")
+
+@csrf_exempt
+def obtener_caders(request):
+    if request.POST:
+        ddr_id=request.POST.get('ddr_id')
+        caders = Cader.objects.filter(ddr_id=ddr_id)
+        data=serializers.serialize("json", caders,fields=('id','nombre'))
+        return HttpResponse(data, mimetype="application/javascript")
+    return HttpResponse("Hello World")
+
+def home(request):
+    titulo="Home Page"
+    return render(request,'home.html',{'titulo':titulo})
+
+@csrf_exempt
+def distrito(request):
+	ciclos=[]
+	i=0
+	for model in models_list:
+		ciclos.append([i,model._meta.verbose_name.title()])
+		i=i+1
+	ddrs=Ddr.objects.all()
+	return render(request, "distrito.html",{'ddrs':ddrs,'ciclos':ciclos})
+    
+@login_required(login_url='/login')
+def predio(request, folio, secuencial):
+	list_predios=[]
+	for model in models_list:
+		buffer_=model.objects.filter(predio=folio,secuencial=secuencial)
+		if buffer_:			
+			list_predios.append([model._meta.verbose_name.title(),buffer_])
+	titulo="Predio: " + folio+" - "+ secuencial
+	return render(request,'predio.html',
+                  {'titulo':titulo,
+                   'list_predios':list_predios})
+
+def propietario(request, n_propietario):
+	list_predios=[]
+	titulo = ""
+	exist = False
+	for model in models_list:
+		buffer_=model.objects.filter(nombre_del_propietario=n_propietario)
+		if len(buffer_)>0:
+			exist = True
+			titulo ="Propietario: " + buffer_[0].nombre_del_propietario
+			list_predios.append([model._meta.verbose_name.title(),buffer_])
+	if exist == False:
+		titulo="Error"
+		list_predios=None
+	return render(request,'propietario.html',
+                  {'titulo':titulo,
+                   'list_predios':list_predios})
+
+def productor(request, n_productor):
+	list_predios=[]
+	titulo = ""
+	exist = False
+	for model in models_list:
+		buffer_=model.objects.filter(nombre_del_productor=n_productor)
+		if len(buffer_)>0:
+			exist = True
+			titulo = "Productor: "+buffer_[0].nombre_del_productor
+		list_predios.append([model._meta.verbose_name.title(),buffer_])
+	if exist == False:
+		titulo="Error"
+		list_predios=None
+	return render(request,'productor.html',
+                  {'titulo':titulo,
+                   'list_predios':list_predios})
+
+def nombre_propietario(request):
+	titulo="Nombre del propietario"
+	if request.POST:
+		nombre = request.POST.get('nombre')
+		predios_list = []
+		for model in models_list:
+			predios_list.append(model.objects.filter(nombre_del_propietario__icontains=nombre))
+		propietarios = []
+		set_propietarios = set()
+		error = ""
+		for predios in range(0,len(predios_list)):
+			for predio in predios_list[predios]:
+				if predio.nombre_del_propietario not in set_propietarios:
+					propietarios.append(predio)
+				set_propietarios.add(predio.nombre_del_propietario)
+		if len(propietarios) < 1:
+			error="Nombre no encontrado"
+		return render(request, 'n_propietario.html', 
+                      {
+                       'propietarios':propietarios,'error':error
+                       })
+	return render(request, 'n_propietario.html', {'titulo':titulo})   
+
+def nombre_productor(request):
+	titulo="Nombre del productor"
+	if request.POST:
+		nombre = request.POST.get('nombre')
+		predios_list = []
+		for model in models_list:
+			predios_list.append(model.objects.filter(nombre_del_productor__icontains=nombre))
+		productores = []
+		set_productores = set()
+		error = ""
+		for predios in range(0,len(predios_list)):
+			for predio in predios_list[predios]:
+				if predio.nombre_del_productor not in set_productores:
+					productores.append(predio)
+				set_productores.add(predio.nombre_del_productor)
+		if len(productores) < 1:
+			error="Nombre no encontrado"
+		return render(request, 'n_productor.html', 
+                      {
+                       'productores':productores,'error':error
+                       })
+	return render(request, 'n_productor.html', {'titulo':titulo})   
+
+  
+def f_productor(request):
+	titulo="Folio del productor"
+	if request.POST:
+		folio = request.POST.get('folio')
+		predios_list = []
+		for model in models_list:
+			predios_list.append(model.objects.filter(productor__icontains=folio))
+		productores = []
+		set_productores = set()
+		error = ""
+		for predios in range(0,len(predios_list)):
+			for predio in predios_list[predios]:
+				if predio.productor not in set_productores:
+					productores.append(predio)
+				set_productores.add(predio.productor)
+		if len(productores) < 1:
+			error="Nombre no encontrado"
+		return render(request, 'f_productor.html', 
+                      {
+                       'productores':productores,'error':error
+                       })
+	return render(request, 'f_productor.html', {'titulo':titulo})   
+
+   
+def f_predio(request):
+    titulo="Folio de predio"
+    if request.POST:
+		folio=request.POST.get('predio')
+		folio=folio.replace(" ","").split('-')
+		predio = None
+		if len(folio) == 2:
+			for model in models_list:
+				buffer_=model.objects.filter(predio=folio[0],secuencial=folio[1])			
+				if buffer_:
+					predio=buffer_[0]
+		else:
+			errors = "Formato incorrecto del folio a buscar"
+			return render(request, 'f_error.html',{'errors':errors})
+		if predio is None:
+			errors="No se encontro el folio"
+			return render(request, 'f_error.html',{'errors':errors})
+		return render(request, 'f_predio.html', 
+                      {
+                       'titulo':titulo,
+                       'id':predio.id,
+                       'predio':predio.predio,
+                       'ddr':predio.ddr,
+                       'cader':predio.cader,
+                       'ejido':predio.ejido,
+                       'n_propietario':predio.nombre_del_propietario,
+                       'secuencial':predio.secuencial,
+                       'curp':predio.curp
+                       })
+    return render(request, 'f_predio.html', {'titulo':titulo})
+
+def f_solicitud(request):
+    titulo="Folio de solicitud"
+    if request.POST:
+		folio=request.POST.get('solicitud')
+		predio = None
+		for model in models_list:
+			buffer_=model.objects.filter(solicitud__icontains = folio)			
+			if buffer_:
+				predio=buffer_[0]
+		if predio is None:
+			errors="No se encontro el folio"
+			return render(request, 'f_solicitud.html',{'errors':errors})
+		return render(request, 'f_solicitud.html', 
+                      {
+                       'titulo':titulo,
+                       'id':predio.id,
+                       'predio':predio.predio,
+                       'ddr':predio.ddr,
+                       'cader':predio.cader,
+                       'ejido':predio.ejido,
+                       'n_propietario':predio.nombre_del_propietario,
+                       'secuencial':predio.secuencial,
+                       'curp':predio.curp
+                       })
+    return render(request, 'f_solicitud.html', {'titulo':titulo})
+
+
+@csrf_exempt
+def paginate(request):
+	if request.is_ajax():
+		model = models_list[0]
+		ciclo = request.POST.get('ciclo')
+		ddr = request.POST.get('ddr')
+		caders = request.POST.get('caders')
+		municipios = request.POST.get('municipios')
+		ejidos = request.POST.get('ejidos')
+		page = request.POST.get('page')
+		nombre_propietario = request.POST.get('nombre_propietario')
+		nombre_productor = request.POST.get('nombre_productor')
+		if ciclo:
+			model=models_list[int(ciclo)]
+		predios=model.objects.all()		
+		if ddr:
+			ddr = Ddr.objects.filter(id=ddr)[0].numero
+			predios = predios.filter(ddr = ddr)
+			if caders:
+				caders = Cader.objects.filter(id=caders)[0].numero
+				predios = predios.filter(cader = caders)
+				if municipios:
+					municipios = Municipio.objects.filter(id=municipios)[0].numero
+					predios = predios.filter(municipio=municipios)
+					if ejidos:
+						ejidos = Ejido.objects.filter(id=ejidos)[0].numero
+						predios = predios.filter(ejido=ejidos)
+		if nombre_propietario:
+			predios = predios.filter(nombre_del_propietario__icontains=nombre_propietario)
+		if nombre_productor:
+			predios = predios.filter(nombre_del_productor__icontains=nombre_productor)
+		paginator = Paginator(predios, 100)
+		try:
+			items=paginator.page(page)
+		except PageNotAnInteger:
+			items=paginator.page(1)
+		except EmptyPage:
+			items=paginator.page(paginator.num_pages)
+		data_t={}
+		data_t.update({"has_next":items.has_next()})
+		data_t.update({"has_previous":items.has_previous()})
+		data_t.update({"num_pages":paginator.num_pages})
+		myjson=[]
+		predios = items.object_list.values_list('ddr','cader','municipio','ejido','predio','secuencial','nombre_del_propietario')
+        for p in predios:
+			myjson.append(p)
+        data_t.update({"items":myjson})
+        data=json.dumps(data_t)
+        return HttpResponse(data, mimetype="application/javascript")
+	return HttpResponse(":)")

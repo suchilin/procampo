@@ -1,0 +1,225 @@
+from __future__ import unicode_literals
+
+from django.db import models
+
+class AuthGroup(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=80, unique=True)
+    class Meta:
+        db_table = 'auth_group'
+
+class AuthGroupPermissions(models.Model):
+    id = models.IntegerField(primary_key=True)
+    group_id = models.IntegerField()
+    permission = models.ForeignKey('AuthPermission')
+    class Meta:
+        db_table = 'auth_group_permissions'
+
+class AuthPermission(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=50)
+    content_type_id = models.IntegerField()
+    codename = models.CharField(max_length=100)
+    class Meta:
+        db_table = 'auth_permission'
+
+class AuthUser(models.Model):
+    id = models.IntegerField(primary_key=True)
+    password = models.CharField(max_length=128)
+    last_login = models.DateTimeField()
+    is_superuser = models.BooleanField()
+    username = models.CharField(max_length=30, unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    email = models.CharField(max_length=75)
+    is_staff = models.BooleanField()
+    is_active = models.BooleanField()
+    date_joined = models.DateTimeField()
+    class Meta:
+        db_table = 'auth_user'
+
+class AuthUserGroups(models.Model):
+    id = models.IntegerField(primary_key=True)
+    user_id = models.IntegerField()
+    group = models.ForeignKey(AuthGroup)
+    class Meta:
+        db_table = 'auth_user_groups'
+
+class AuthUserUserPermissions(models.Model):
+    id = models.IntegerField(primary_key=True)
+    user_id = models.IntegerField()
+    permission = models.ForeignKey(AuthPermission)
+    class Meta:
+        db_table = 'auth_user_user_permissions'
+
+class Cader(models.Model):
+    id = models.IntegerField(primary_key=True)
+    ddr_id = models.IntegerField(null=True, blank=True)
+    numero = models.IntegerField(null=True, blank=True)
+    nombre = models.TextField(blank=True)
+    class Meta:
+        db_table = 'cader'
+
+class Ddr(models.Model):
+    id = models.IntegerField(primary_key=True)
+    estado_id = models.IntegerField(null=True, blank=True)
+    numero = models.IntegerField(null=True, blank=True)
+    nombre = models.TextField(blank=True)
+    class Meta:
+        db_table = 'ddr'
+
+class DjangoAdminLog(models.Model):
+    id = models.IntegerField(primary_key=True)
+    action_time = models.DateTimeField()
+    user = models.ForeignKey(AuthUser)
+    content_type = models.ForeignKey('DjangoContentType', null=True, blank=True)
+    object_id = models.TextField(blank=True)
+    object_repr = models.CharField(max_length=200)
+    action_flag = models.PositiveSmallIntegerField()
+    change_message = models.TextField()
+    class Meta:
+        db_table = 'django_admin_log'
+
+class DjangoContentType(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100)
+    app_label = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    class Meta:
+        db_table = 'django_content_type'
+
+class DjangoSession(models.Model):
+    session_key = models.CharField(max_length=40, unique=True)
+    session_data = models.TextField()
+    expire_date = models.DateTimeField()
+    class Meta:
+        db_table = 'django_session'
+
+class DjangoSite(models.Model):
+    id = models.IntegerField(primary_key=True)
+    domain = models.CharField(max_length=100)
+    name = models.CharField(max_length=50)
+    class Meta:
+        db_table = 'django_site'
+
+class Ejido(models.Model):
+    id = models.IntegerField(primary_key=True)
+    municipio_id = models.IntegerField(null=True, blank=True)
+    numero = models.IntegerField(null=True, blank=True)
+    nombre = models.TextField(blank=True)
+    class Meta:
+        db_table = 'ejido'
+
+class Municipio(models.Model):
+    id = models.IntegerField(primary_key=True)
+    cader_id = models.IntegerField(null=True, blank=True)
+    numero = models.IntegerField(null=True, blank=True)
+    nombre = models.TextField(blank=True)
+    class Meta:
+        db_table = 'municipio'
+
+class Pv12(models.Model):
+    id = models.IntegerField(primary_key=True) # Field name made lowercase.
+    ddr = models.IntegerField(null=True, db_column='DDR', blank=True) # Field name made lowercase.
+    cader = models.IntegerField(null=True, db_column='CADER', blank=True) # Field name made lowercase.
+    municipio = models.IntegerField(null=True, db_column='MUNICIPIO', blank=True) # Field name made lowercase.
+    ejido = models.IntegerField(null=True, db_column='EJIDO', blank=True) # Field name made lowercase.
+    predio = models.TextField(db_column='PREDIO', blank=True) # Field name made lowercase.
+    secuencial = models.TextField(db_column='SECUENCIAL', blank=True) # Field name made lowercase.
+    procedimiento_especifico = models.TextField(db_column='PROCEDIMIENTO ESPECIFICO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    tenencia = models.FloatField(null=True, db_column='TENENCIA', blank=True) # Field name made lowercase.
+    tipo_de_documento_legal = models.TextField(db_column='TIPO DE DOCUMENTO LEGAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    folio_del_documento_legal = models.TextField(db_column='FOLIO DEL DOCUMENTO LEGAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_total = models.FloatField(null=True, db_column='SUPERFICIE TOTAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_elegible = models.FloatField(null=True, db_column='SUPERFICIE ELEGIBLE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    excede_limite_propiedad = models.TextField(db_column='EXCEDE LIMITE PROPIEDAD', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_maxima_a_apoyar = models.TextField(db_column='SUPERFICIE MAXIMA A APOYAR', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    propietario = models.TextField(db_column='PROPIETARIO', blank=True) # Field name made lowercase.
+    nombre_del_propietario = models.TextField(db_column='NOMBRE DEL PROPIETARIO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    tipo_de_persona = models.TextField(db_column='TIPO DE PERSONA', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    curp = models.TextField(db_column='CURP', blank=True) # Field name made lowercase.
+    rfc = models.TextField(db_column='RFC', blank=True) # Field name made lowercase.
+    actualizado = models.TextField(db_column='ACTUALIZADO', blank=True) # Field name made lowercase.
+    productor = models.TextField(db_column='PRODUCTOR', blank=True) # Field name made lowercase.
+    nombre_del_productor = models.TextField(db_column='NOMBRE DEL PRODUCTOR', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    campo22 = models.TextField(db_column='Campo22', blank=True) # Field name made lowercase.
+    campo23 = models.TextField(db_column='Campo23', blank=True) # Field name made lowercase.
+    campo24 = models.TextField(db_column='Campo24', blank=True) # Field name made lowercase.
+    number_32d_requerido = models.TextField(db_column='32d REQUERIDO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it wasn't a valid Python identifier.
+    folio_32d = models.TextField(db_column='FOLIO 32d', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    vigencia_32d = models.TextField(db_column='VIGENCIA 32d', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    contrato_de_cesion_de_derechos = models.TextField(db_column='CONTRATO DE CESION DE DERECHOS', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cesionario = models.TextField(db_column='CESIONARIO', blank=True) # Field name made lowercase.
+    solicitud = models.TextField(db_column='SOLICITUD', blank=True) # Field name made lowercase.
+    tipo_proceso = models.TextField(db_column='TIPO PROCESO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    situacion_de_la_solicitud = models.TextField(db_column='SITUACION DE LA SOLICITUD', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    folio_fpyc = models.TextField(db_column='FOLIO FPYC', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_cultivada = models.FloatField(null=True, db_column='SUPERFICIE CULTIVADA', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cultivo_predominante = models.FloatField(null=True, db_column='CULTIVO PREDOMINANTE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    modalidad_predominante = models.TextField(db_column='MODALIDAD PREDOMINANTE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_calculada = models.FloatField(null=True, db_column='SUPERFICIE_CALCULADA', blank=True) # Field name made lowercase.
+    monto_calculado = models.FloatField(null=True, db_column='MONTO_CALCULADO', blank=True) # Field name made lowercase.
+    medio_de_pago = models.TextField(db_column='MEDIO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cuenta_folio_cheque_referencia_op = models.TextField(db_column='CUENTA/FOLIO CHEQUE/REFERENCIA OP', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    situacion_del_medio_de_pago = models.TextField(db_column='SITUACION DEL MEDIO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    fecha_de_generacion_del_apoyo = models.TextField(db_column='FECHA DE GENERACION DEL APOYO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    evento_de_pago = models.TextField(db_column='EVENTO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    situacion_del_apoyo = models.TextField(db_column='SITUACION_DEL_APOYO', blank=True) # Field name made lowercase.
+    oficio_de_notificacion_del_deposito = models.TextField(db_column='OFICIO DE NOTIFICACION DEL DEPOSITO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    acta_de_peticion_de_recursos = models.TextField(db_column='ACTA DE PETICION DE RECURSOS', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    ok = models.TextField(db_column='OK', blank=True) # Field name made lowercase.
+    class Meta:
+        verbose_name = 'Primavera Verano 2012'
+        db_table = 'pv12'
+
+class Pv13(models.Model):
+    cader = models.FloatField(null=True, db_column='CADER', blank=True) # Field name made lowercase.
+    ddr = models.FloatField(null=True, db_column='DDR', blank=True) # Field name made lowercase.
+    ejido = models.FloatField(null=True, db_column='EJIDO', blank=True) # Field name made lowercase.
+    municipio = models.FloatField(null=True, db_column='MUNICIPIO', blank=True) # Field name made lowercase.
+    predio = models.TextField(db_column='PREDIO', blank=True) # Field name made lowercase.
+    procedimiento_especifico = models.TextField(db_column='PROCEDIMIENTO ESPECIFICO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    tenencia = models.TextField(db_column='TENENCIA', blank=True) # Field name made lowercase.
+    folio_del_documento_legal = models.TextField(db_column='FOLIO DEL DOCUMENTO LEGAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    tipo_de_documento_legal = models.TextField(db_column='TIPO DE DOCUMENTO LEGAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_elegible = models.FloatField(null=True, db_column='SUPERFICIE ELEGIBLE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_total = models.FloatField(null=True, db_column='SUPERFICIE TOTAL', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    excede_limite_propiedad = models.TextField(db_column='EXCEDE LIMITE PROPIEDAD', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    propietario = models.TextField(db_column='PROPIETARIO', blank=True) # Field name made lowercase.
+    superficie_maxima_a_apoyar = models.TextField(db_column='SUPERFICIE MAXIMA A APOYAR', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    nombre_del_propietario = models.TextField(db_column='NOMBRE DEL PROPIETARIO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    curp = models.TextField(db_column='CURP', blank=True) # Field name made lowercase.
+    tipo_de_persona = models.TextField(db_column='TIPO DE PERSONA', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    actualizado = models.TextField(db_column='ACTUALIZADO', blank=True) # Field name made lowercase.
+    rfc = models.TextField(db_column='RFC', blank=True) # Field name made lowercase.
+    nombre_del_productor = models.TextField(db_column='NOMBRE DEL PRODUCTOR', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    productor = models.TextField(db_column='PRODUCTOR', blank=True) # Field name made lowercase.
+    d_requerido = models.TextField(db_column='d REQUERIDO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    folio_32d = models.TextField(db_column='FOLIO 32d', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    contrato_de_cesion_de_derechos = models.TextField(db_column='CONTRATO DE CESION DE DERECHOS', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    vigencia_32d = models.TextField(db_column='VIGENCIA 32d', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cesionario = models.TextField(db_column='CESIONARIO', blank=True) # Field name made lowercase.
+    solicitud = models.TextField(db_column='SOLICITUD', blank=True) # Field name made lowercase.
+    situacion_de_la_solicitud = models.TextField(db_column='SITUACION DE LA SOLICITUD', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    tipo_proceso = models.TextField(db_column='TIPO PROCESO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    folio_fpyc = models.TextField(db_column='FOLIO FPYC', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cultivo_predominante = models.TextField(db_column='CULTIVO PREDOMINANTE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_cultivada = models.FloatField(null=True, db_column='SUPERFICIE CULTIVADA', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    modalidad_predominante = models.TextField(db_column='MODALIDAD PREDOMINANTE', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    monto_calculado = models.FloatField(null=True, db_column='MONTO CALCULADO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    superficie_calculada = models.FloatField(null=True, db_column='SUPERFICIE CALCULADA', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    cuenta_folio_cheque_referencia_op = models.TextField(db_column='CUENTA/FOLIO CHEQUE/REFERENCIA OP', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    medio_de_pago = models.TextField(db_column='MEDIO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    fecha_de_generacion_del_apoyo = models.TextField(db_column='FECHA DE GENERACION DEL APOYO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    situacion_del_medio_de_pago = models.TextField(db_column='SITUACION DEL MEDIO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    evento_de_pago = models.TextField(db_column='EVENTO DE PAGO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    oficio_de_notificacion_del_deposito = models.TextField(db_column='OFICIO DE NOTIFICACION DEL DEPOSITO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    situacion_del_apoyo = models.TextField(db_column='SITUACION DEL APOYO', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    acta_de_peticion_de_recursos = models.TextField(db_column='ACTA DE PETICION DE RECURSOS', blank=True) # Field name made lowercase. Field renamed to remove unsuitable characters.
+    id = models.IntegerField(primary_key=True) # Field name made lowercase.
+    ok = models.TextField(db_column='OK', blank=True) # Field name made lowercase.
+    secuencial = models.TextField(db_column='SECUENCIAL', blank=True) # Field name made lowercase.
+    class Meta:
+        verbose_name = 'Primavera 2013'
+        db_table = 'pv13'
+
